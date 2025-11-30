@@ -1,0 +1,10 @@
+[project]
+name = "nsekit-mcp"
+version = "0.1.0"
+description = "MCP tools for accessing NSE India market data using NseKit"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=1.22.0",
+    "nsekit>=0.0.7",
+]

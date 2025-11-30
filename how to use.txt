@@ -1,0 +1,49 @@
+Fresh Start
+-----------------------------------------------------------
+
+pip install mcp
+
+pip install uv
+
+uv init folder name
+
+uv add "mcp[cli]"
+
+pip install --upgrade typer (if error facing)
+
+uv add NseKit
+
+uv sync
+
+-----------------------------------------------------------
+
+.gemini
+settings.json
+
+{
+  "mcpServers": {
+    "NseKit-MCP": {
+      "command": "UV",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "D:\\Prasad\\Trading\\01. Py\\MCP\\nsekit-mcp\\main.py"
+      ]
+    }
+  }
+}
+
+-----------------------------------------------------------
+.venv\Scripts\Activate.ps1
+-----------------------------------------------------------
+
+(***open Terminal Wait 3 sec env load***)
+
+uv run mcp install main.py
+
+gemini
+
+/mcp
