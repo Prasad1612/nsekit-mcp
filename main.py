@@ -1911,3 +1911,7 @@ def sebi_data_pages(page: int = 1):
 if __name__ == "__main__":
     print("🔵 Starting NseKit-MCP server...")
     asyncio.run(mcp.run(transport="streamable-http"))
+
+# if __name__ == "__main__":
+#     print("🔵 Starting NseKit-MCP server...")
+#     mcp.run()
