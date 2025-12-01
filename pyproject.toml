@@ -7,4 +7,5 @@ requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.22.0",
     "nsekit>=0.0.7",
+    "typer>=0.20.0",
 ]

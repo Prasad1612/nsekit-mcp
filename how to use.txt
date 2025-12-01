@@ -7,12 +7,11 @@ pip install uv
 
 uv init folder name
 
+uv sync
 uv add "mcp[cli]"
-
 pip install --upgrade typer (if error facing)
-
 uv add NseKit
-
+uv add typer
 uv sync
 
 -----------------------------------------------------------
@@ -36,14 +35,97 @@ settings.json
   }
 }
 
+or 
+
+{
+  "mcpServers": {
+    "NseKit-MCP": {
+      "command": "mcp",
+      "args": [
+        "run",
+        "D:\\Prasad\\Trading\\01. Py\\MCP\\nsekit-mcp\\main.py"
+      ]
+    }
+  }
+}
 -----------------------------------------------------------
 .venv\Scripts\Activate.ps1
 -----------------------------------------------------------
 
-(***open Terminal Wait 3 sec env load***)
+uv run mcp install main.py    (***open Terminal Wait 3 sec env load***)
 
-uv run mcp install main.py
+uv run mcp run main.py or mcp run main.py (both not working for me)
+
+-----------------------------------------------------------
 
 gemini
 
 /mcp
+
+-----------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Combine both → readable + original in comments Details format tell to ai so ai can pick tool correctly
+
+format
+
+@mcp.tool()
+def <readable_name>(<parameters with types>):
+    """
+    TOOL: <readable_name>
+    DESCRIPTION:
+        <Clear description of what data this tool returns>.
+        Include usage examples / expected output.
+
+    NseKit Mapping:
+        <object>.<original_function>(<parameters>)
+        (This tells AI exactly which underlying function is being wrapped.)
+
+    PARAMETERS:
+        <parameter>: <type> – <description>
+        <parameter>: <type> – <description>
+
+    RETURNS:
+        JSON response representing the DataFrame or raw value.
+
+    CATEGORY:
+        <Index / Preopen / Equity Live / FnO Live / FnO EOD / CM EOD / IPO / SEBI / MC>
+    """
+    return df_to_json(<object>.<original_function>(<parameters>))
+
+
+example 
+
+@mcp.tool()
+def index_historical(index_name: str, from_date: str, to_date: str = None):
+    """
+    TOOL: index_historical
+    DESCRIPTION:
+        Fetch historical OHLC, volume, and turnover data for an NSE index.
+        Use this when AI needs index history, trend analysis, OHLC data,
+        chart preparation, or historical comparison.
+
+    NseKit Mapping:
+        get.index_historical_data(index_name, from_date, to_date)
+
+    PARAMETERS:
+        index_name: str – Index name (e.g., "NIFTY 50", "NIFTY BANK").
+        from_date: str – Start date ("DD-MM-YYYY" or periods: 6M, 1Y, etc).
+        to_date: str (optional) – End date. Defaults to today.
+
+    RETURNS:
+        JSON list of records representing historical OHLC & turnover.
+
+    CATEGORY:
+        Index_Historical
+    """
+    return df_to_json(get.index_historical_data(index_name, from_date, to_date))

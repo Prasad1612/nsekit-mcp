@@ -1,41 +1,19 @@
+#=====================================================================#
+#                           NseKit MCP Tools
+#=====================================================================#
+
 from mcp.server.fastmcp import FastMCP
 from NseKit import NseKit, Moneycontrol
 import pandas as pd
-import time                      
-from threading import Lock
-import asyncio    
 
-# ================================================================
-#                   RATE LIMIT CONTROL (NSE Safe)
-# ================================================================
-
-RATE_LIMIT_SECONDS = 0.35   # NSE safe: ~3 requests/sec
-_last_call_time = 0
-_lock = Lock()
-
-def rate_limit():
-    """Ensures minimum delay between NSE API calls."""
-    global _last_call_time
-    with _lock:
-        now = time.time()
-        elapsed = now - _last_call_time
-        if elapsed < RATE_LIMIT_SECONDS:
-            time.sleep(RATE_LIMIT_SECONDS - elapsed)
-        _last_call_time = time.time()
-
-# ================================================================
-#                   MCP + NseKit Initialization
-# ================================================================
-
+# Initialize MCP
 mcp = FastMCP("NseKit-MCP", json_response=True)
 
+# Initialize NseKit & Moneycontrol
 get = NseKit.Nse()
 mc = Moneycontrol.MC()
 
-# ================================================================
-#                   Helper: DF → JSON
-# ================================================================
-
+# Helper: DataFrame → JSON
 def df_to_json(data):
     if isinstance(data, pd.DataFrame):
         return data.to_dict(orient="records")
@@ -58,7 +36,6 @@ def market_status(mode: str = "Market Status"):
     CATEGORY:
         NSE_Live
     """
-    rate_limit()
     return df_to_json(get.nse_market_status(mode))
 
 @mcp.tool()
@@ -74,7 +51,6 @@ def is_market_open(segment: str = "Capital Market"):
     CATEGORY:
         NSE_Live
     """
-    rate_limit()
     return get.nse_is_market_open(segment)
 
 @mcp.tool()
@@ -90,7 +66,6 @@ def trading_holidays(list_only: bool = False):
     CATEGORY:
         NSE_Reference
     """
-    rate_limit()
     return df_to_json(get.nse_trading_holidays(list_only=list_only))
 
 @mcp.tool()
@@ -106,7 +81,6 @@ def clearing_holidays(list_only: bool = False):
     CATEGORY:
         NSE_Reference
     """
-    rate_limit()
     return df_to_json(get.nse_clearing_holidays(list_only=list_only))
 
 @mcp.tool()
@@ -122,7 +96,6 @@ def is_trading_holiday(date: str = None):
     CATEGORY:
         NSE_Reference
     """
-    rate_limit()
     return get.is_nse_trading_holiday(date)
 
 @mcp.tool()
@@ -138,7 +111,6 @@ def is_clearing_holiday(date: str = None):
     CATEGORY:
         NSE_Reference
     """
-    rate_limit()
     return get.is_nse_clearing_holiday(date)
 
 
@@ -157,7 +129,6 @@ def live_market_turnover():
     CATEGORY:
         NSE_Live
     """
-    rate_limit()
     return df_to_json(get.nse_live_market_turnover())
 
 @mcp.tool()
@@ -171,7 +142,6 @@ def reference_rates():
     CATEGORY:
         NSE_Live
     """
-    rate_limit()
     return df_to_json(get.nse_reference_rates())
 
 @mcp.tool()
@@ -185,7 +155,6 @@ def gift_nifty_live():
     CATEGORY:
         NSE_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_gifty_nifty())
 
 @mcp.tool()
@@ -199,7 +168,6 @@ def market_statistics():
     CATEGORY:
         NSE_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_market_statistics())
 
 
@@ -220,7 +188,6 @@ def preopen_index_summary(index_name: str = "NIFTY 50"):
     CATEGORY:
         Pre_Market
     """
-    rate_limit()
     return df_to_json(get.pre_market_nifty_info(index_name))
 
 @mcp.tool()
@@ -234,7 +201,6 @@ def preopen_all_adv_dec():
     CATEGORY:
         Pre_Market
     """
-    rate_limit()
     return df_to_json(get.pre_market_all_nse_adv_dec_info())
 
 @mcp.tool()
@@ -250,7 +216,6 @@ def preopen_stocks(category: str = "NIFTY 50"):
     CATEGORY:
         Pre_Market
     """
-    rate_limit()
     return df_to_json(get.pre_market_info(category))
 
 @mcp.tool()
@@ -264,24 +229,22 @@ def all_indices_live():
     CATEGORY:
         Index_Live
     """
-    rate_limit()
     return df_to_json(get.index_live_all_indices_data())
 
 @mcp.tool()
-def index_constituents_live_stocks_data(index_name: str, list_only: bool = False):
+def index_constituents(index_name: str, list_only: bool = False):
     """
-    TOOL: index_constituents_live_stocks_data
+    TOOL: index_constituents
     DESCRIPTION:
-        Get stocks in any NSE index with live or current data.
+        Get stocks in any NSE index with weightage.
     PARAMETERS:
         index_name: str – e.g. "NIFTY 50", "NIFTY IT"
-        list_only: bool – Return only symbols if True, otherwise full data
+        list_only: bool – Return only symbols if True
     RETURNS:
         JSON constituents
     CATEGORY:
         Index_Live
     """
-    rate_limit()
     return df_to_json(get.index_live_indices_stocks_data(index_name, list_only=list_only))
 
 
@@ -302,7 +265,6 @@ def nifty50_constituents(list_only: bool = False):
     CATEGORY:
         Index_Reference
     """
-    rate_limit()
     return df_to_json(get.nse_6m_nifty_50(list_only=list_only))
 
 @mcp.tool()
@@ -318,7 +280,6 @@ def nifty500_constituents(list_only: bool = False):
     CATEGORY:
         Index_Reference
     """
-    rate_limit()
     return df_to_json(get.nse_6m_nifty_500(list_only=list_only))
 
 @mcp.tool()
@@ -335,7 +296,6 @@ def fno_list(entity_type: str = "stock", list_only: bool = False):
     CATEGORY:
         FnO_Reference
     """
-    rate_limit()
     return df_to_json(get.nse_eom_fno_full_list(entity_type, list_only=list_only))
 
 @mcp.tool()
@@ -351,7 +311,6 @@ def equity_master(list_only: bool = False):
     CATEGORY:
         Equity_Reference
     """
-    rate_limit()
     return df_to_json(get.nse_eod_equity_full_list(list_only=list_only))
 
 
@@ -375,7 +334,6 @@ def option_chain(symbol: str, is_index: bool = False, expiry: str = None, compac
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     mode = "compact" if compact else None
     return df_to_json(get.fno_live_option_chain(symbol, indices=is_index, expiry_date=expiry, oi_mode=mode))
 
@@ -393,7 +351,6 @@ def expiry_dates(symbol: str = "NIFTY", filter_type: str = "All"):
     CATEGORY:
         FnO_Reference
     """
-    rate_limit()
     return df_to_json(get.fno_expiry_dates(symbol, filter_type))
 
 @mcp.tool()
@@ -411,7 +368,6 @@ def most_active_options(contract_type: str = "Stock", option_type: str = "Call",
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_most_active(contract_type, option_type, sort_by))
 
 
@@ -432,7 +388,6 @@ def stock_quote(symbol: str):
     CATEGORY:
         Equity_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_equity_price_info(symbol))
 
 @mcp.tool()
@@ -448,7 +403,6 @@ def most_active_equities(by: str = "value"):
     CATEGORY:
         Equity_Live
     """
-    rate_limit()
     func = get.cm_live_most_active_equity_by_value if by == "value" else get.cm_live_most_active_equity_by_vol
     return df_to_json(func())
 
@@ -463,7 +417,6 @@ def volume_spurts():
     CATEGORY:
         Equity_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_volume_spurts())
 
 @mcp.tool()
@@ -477,7 +430,6 @@ def hit_52week_high():
     CATEGORY:
         Equity_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_52week_high())
 
 @mcp.tool()
@@ -491,7 +443,6 @@ def hit_52week_low():
     CATEGORY:
         Equity_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_52week_low())
 
 
@@ -514,7 +465,6 @@ def insider_trading(symbol: str = None, period: str = None, start_date: str = No
     CATEGORY:
         Corporate_Events
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_insider_trading(symbol, period, start_date, end_date))
 
 @mcp.tool()
@@ -531,7 +481,6 @@ def corporate_actions(symbol: str = None, period: str = None, start_date: str = 
     CATEGORY:
         Corporate_Events
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_corporate_action(symbol, period, start_date, end_date, purpose))
 
 @mcp.tool()
@@ -545,7 +494,6 @@ def board_meetings(symbol: str = None, start_date: str = None, end_date: str = N
     CATEGORY:
         Corporate_Events
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_board_meetings(symbol, start_date, end_date))
 
 
@@ -564,7 +512,6 @@ def current_ipos():
     CATEGORY:
         IPO
     """
-    rate_limit()
     return df_to_json(get.ipo_current())
 
 @mcp.tool()
@@ -578,7 +525,6 @@ def ipo_preopen_today():
     CATEGORY:
         IPO
     """
-    rate_limit()
     return df_to_json(get.ipo_preopen())
 
 @mcp.tool()
@@ -594,7 +540,6 @@ def ipo_tracker(board: str = None):
     CATEGORY:
         IPO
     """
-    rate_limit()
     return df_to_json(get.ipo_tracker_summary(board))
 
 
@@ -615,7 +560,6 @@ def index_history(index_name: str, period: str = "1Y", from_date: str = None, to
     CATEGORY:
         Historical
     """
-    rate_limit()
     return df_to_json(get.index_historical_data(index_name, from_date or period, to_date))
 
 @mcp.tool()
@@ -629,7 +573,6 @@ def stock_history(symbol: str, period: str = "1Y", from_date: str = None, to_dat
     CATEGORY:
         Historical
     """
-    rate_limit()
     return df_to_json(get.cm_hist_security_wise_data(symbol, period or from_date, to_date))
 
 
@@ -656,7 +599,6 @@ def nse_live_hist_circulars(from_date: str = None, to_date: str = None, departme
     CATEGORY:
         NSE_Historical
     """
-    rate_limit()
     # Original: get.nse_live_hist_circulars(from_date, to_date) or with department
     return df_to_json(get.nse_live_hist_circulars(from_date, to_date, department))
 
@@ -676,7 +618,6 @@ def nse_live_hist_press_releases(from_date: str = None, to_date: str = None, dep
     CATEGORY:
         NSE_Historical
     """
-    rate_limit()
     # Original: get.nse_live_hist_press_releases(...)
     return df_to_json(get.nse_live_hist_press_releases(from_date, to_date, department))
 
@@ -697,7 +638,6 @@ def index_live_nifty_50_returns():
     CATEGORY:
         Index_Live
     """
-    rate_limit()
     # Original: get.index_live_nifty_50_returns()
     return df_to_json(get.index_live_nifty_50_returns())
 
@@ -714,7 +654,6 @@ def index_live_nifty_50_contribution():
     CATEGORY:
         Index_Live
     """
-    rate_limit()
     # Original: get.index_live_nifty_50_contribution()
     return df_to_json(get.index_live_nifty_50_contribution())
 
@@ -736,7 +675,6 @@ def index_eod_bhav_copy(date: str):
     CATEGORY:
         Index_EOD
     """
-    rate_limit()
     # Original: get.index_eod_bhav_copy("17-10-2025")
     return df_to_json(get.index_eod_bhav_copy(date))
 
@@ -756,7 +694,6 @@ def index_pe_pb_div_historical_data(index_name: str, from_date: str = None, to_d
     CATEGORY:
         Index_Historical
     """
-    rate_limit()
     # Original: get.index_pe_pb_div_historical_data("NIFTY 50", "01-01-2025", "17-10-2025")
     return df_to_json(get.index_pe_pb_div_historical_data(index_name, from_date, to_date))
 
@@ -775,7 +712,6 @@ def india_vix_historical_data(from_date: str = None, to_date: str = None):
     CATEGORY:
         Index_Historical
     """
-    rate_limit()
     # Original: get.india_vix_historical_data("01-08-2025", "17-10-2025")
     return df_to_json(get.india_vix_historical_data(from_date, to_date))
 
@@ -797,7 +733,6 @@ def cm_live_equity_info(symbol: str):
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     # Original: get.cm_live_equity_info("RELIANCE")
     return df_to_json(get.cm_live_equity_info(symbol))
 
@@ -814,7 +749,6 @@ def cm_live_block_deal():
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     # Original: get.cm_live_block_deal()
     return df_to_json(get.cm_live_block_deal())
 
@@ -834,7 +768,6 @@ def cm_live_hist_corporate_announcement(symbol: str = None, from_date: str = Non
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     # Original: get.cm_live_hist_corporate_announcement("RELIANCE", "01-01-2025", "15-10-2025")
     return df_to_json(get.cm_live_hist_corporate_announcement(symbol, from_date, to_date))
 
@@ -853,7 +786,6 @@ def cm_live_today_event_calendar(date_from: str = None, date_to: str = None):
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     # Original: get.cm_live_today_event_calendar("01-01-2025", "01-01-2025")
     return df_to_json(get.cm_live_today_event_calendar(date_from, date_to))
 
@@ -870,7 +802,6 @@ def cm_live_upcoming_event_calendar():
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_upcoming_event_calendar())
 
 
@@ -889,7 +820,6 @@ def cm_live_hist_shareholder_meetings(symbol: str = None, from_date: str = None,
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_Shareholder_meetings(symbol, from_date, to_date))
 
 
@@ -909,7 +839,6 @@ def cm_live_hist_qualified_institutional_placement(stage: str = None, period_or_
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_qualified_institutional_placement(stage, period_or_symbol, from_date, to_date))
 
 
@@ -926,7 +855,6 @@ def cm_live_hist_preferential_issue(stage: str = None, period_or_symbol: str = N
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_preferential_issue(stage, period_or_symbol, from_date, to_date))
 
 
@@ -943,7 +871,6 @@ def cm_live_hist_right_issue(stage: str = None, period_or_symbol: str = None, fr
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_right_issue(stage, period_or_symbol, from_date, to_date))
 
 
@@ -959,7 +886,6 @@ def cm_live_voting_results():
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_voting_results())
 
 
@@ -975,7 +901,6 @@ def cm_live_qtly_shareholding_patterns():
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_qtly_shareholding_patterns())
 
 
@@ -993,7 +918,6 @@ def cm_live_hist_annual_reports(symbol: str = None, from_date: str = None, to_da
     CATEGORY:
         CM_Live
     """
-    rate_limit()
     return df_to_json(get.cm_live_hist_annual_reports(symbol, from_date, to_date))
 
 # =====================================================================
@@ -1001,20 +925,20 @@ def cm_live_hist_annual_reports(symbol: str = None, from_date: str = None, to_da
 # =====================================================================
 
 @mcp.tool()
-def fno_live_futures_data(symbol: str):
+def fno_live_futures_data(symbol: str, indices: bool = False):
     """
     TOOL: fno_live_futures_data
     DESCRIPTION:
         Live futures data for stock or index
     PARAMETERS:
-        symbol: str – "RELIANCE" or "NIFTY"
+        symbol: str – "RELIANCE" or "NIFTY 50"
+        indices: bool – True if index
     RETURNS:
         Futures snapshot
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
-    return df_to_json(get.fno_live_futures_data(symbol))
+    return df_to_json(get.fno_live_futures_data(symbol, indices=indices))
 
 
 @mcp.tool()
@@ -1030,7 +954,6 @@ def fno_live_most_active_futures_contracts(by: str = "Volume"):
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_most_active_futures_contracts(by))
 
 
@@ -1046,7 +969,6 @@ def fno_live_most_active_contracts_by_oi():
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_most_active_contracts_by_oi())
 
 
@@ -1062,7 +984,6 @@ def fno_live_most_active_contracts_by_volume():
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_most_active_contracts_by_volume())
 
 
@@ -1078,7 +999,6 @@ def fno_live_most_active_options_contracts_by_volume():
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_most_active_options_contracts_by_volume())
 
 
@@ -1094,7 +1014,6 @@ def fno_live_most_active_underlying():
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_most_active_underlying())
 
 
@@ -1110,7 +1029,6 @@ def fno_live_change_in_oi():
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_change_in_oi())
 
 
@@ -1128,7 +1046,6 @@ def fno_live_nifty_active_contracts(symbol: str = "NIFTY", expiry_date: str = No
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_nifty_active_contracts(symbol, expiry_date=expiry_date))
 
 
@@ -1146,7 +1063,6 @@ def fno_live_stock_active_contracts(symbol: str, expiry_date: str = None):
     CATEGORY:
         FnO_Live
     """
-    rate_limit()
     return df_to_json(get.fno_live_stock_active_contracts(symbol, expiry_date=expiry_date))
 
 
@@ -1167,7 +1083,6 @@ def fii_dii_activity(exchange: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_fii_dii_activity()
     # Original: get.cm_eod_fii_dii_activity("Nse") 
     return df_to_json(get.cm_eod_fii_dii_activity(exchange))
@@ -1186,7 +1101,6 @@ def market_activity_report(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_market_activity_report("17-10-2025")
     return df_to_json(get.cm_eod_market_activity_report(date))
 
@@ -1204,7 +1118,6 @@ def bhavcopy_with_delivery(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_bhavcopy_with_delivery("17-10-2025")
     return df_to_json(get.cm_eod_bhavcopy_with_delivery(date))
 
@@ -1222,7 +1135,6 @@ def equity_bhavcopy(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_equity_bhavcopy("17-10-2025")
     return df_to_json(get.cm_eod_equity_bhavcopy(date))
 
@@ -1240,7 +1152,6 @@ def week_52_high_low(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_52_week_high_low("17-10-2025")
     return df_to_json(get.cm_eod_52_week_high_low(date))
 
@@ -1257,7 +1168,6 @@ def bulk_deals_latest():
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_bulk_deal()
     return df_to_json(get.cm_eod_bulk_deal())
 
@@ -1274,7 +1184,6 @@ def block_deals_latest():
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_block_deal()
     return df_to_json(get.cm_eod_block_deal())
 
@@ -1292,7 +1201,6 @@ def short_selling(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_shortselling("17-10-2025")
     return df_to_json(get.cm_eod_shortselling(date))
 
@@ -1310,7 +1218,6 @@ def surveillance_indicator(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_surveillance_indicator("17-10-25")
     return df_to_json(get.cm_eod_surveillance_indicator(date))
 
@@ -1327,7 +1234,6 @@ def series_change_latest():
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_series_change()
     return df_to_json(get.cm_eod_series_change())
 
@@ -1345,7 +1251,6 @@ def equity_band_changes(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_eq_band_changes("17-10-2025")
     return df_to_json(get.cm_eod_eq_band_changes(date))
 
@@ -1363,7 +1268,6 @@ def equity_price_bands_eod(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_eq_price_band("17-10-2025")
     return df_to_json(get.cm_eod_eq_price_band(date))
 
@@ -1384,7 +1288,6 @@ def equity_price_bands_historical(symbol: str = None, period: str = None, from_d
     CATEGORY:
         Equity_Historical
     """
-    rate_limit()
     # Original examples:
     # get.cm_hist_eq_price_band()
     # get.cm_hist_eq_price_band("1W")
@@ -1407,7 +1310,6 @@ def pe_ratio(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_pe_ratio("17-10-25")
     return df_to_json(get.cm_eod_pe_ratio(date))
 
@@ -1425,7 +1327,6 @@ def market_cap(date: str):
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_mcap("17-10-25")
     return df_to_json(get.cm_eod_mcap(date))
 
@@ -1442,7 +1343,6 @@ def equity_name_change_latest():
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_eq_name_change()
     return df_to_json(get.cm_eod_eq_name_change())
 
@@ -1459,7 +1359,6 @@ def equity_symbol_change_latest():
     CATEGORY:
         Equity_EOD
     """
-    rate_limit()
     # Original: get.cm_eod_eq_symbol_change()
     return df_to_json(get.cm_eod_eq_symbol_change())
 
@@ -1479,7 +1378,6 @@ def historical_bulk_deals(symbol: str = None, period: str = None, from_date: str
     CATEGORY:
         Equity_Historical
     """
-    rate_limit()
     # Original: get.cm_hist_bulk_deals(...) variants
     return df_to_json(get.cm_hist_bulk_deals(symbol, period or from_date, to_date))
 
@@ -1499,7 +1397,6 @@ def historical_block_deals(symbol: str = None, period: str = None, from_date: st
     CATEGORY:
         Equity_Historical
     """
-    rate_limit()
     return df_to_json(get.cm_hist_block_deals(symbol, period or from_date, to_date))
 
 
@@ -1518,7 +1415,6 @@ def historical_short_selling(symbol: str = None, period: str = None, from_date: 
     CATEGORY:
         Equity_Historical
     """
-    rate_limit()
     return df_to_json(get.cm_hist_short_selling(symbol, period or from_date, to_date))
 
 
@@ -1537,7 +1433,6 @@ def business_growth(mode: str = "daily", month: str = None, year: int = None):
     CATEGORY:
         Market_Stats
     """
-    rate_limit()
     # Original: get.cm_dmy_biz_growth(...)
     return df_to_json(get.cm_dmy_biz_growth(mode, month, year))
 
@@ -1556,7 +1451,6 @@ def monthly_settlement_report(period: str = None, start_year: int = None, end_ye
     CATEGORY:
         Market_Stats
     """
-    rate_limit()
     # Original: get.cm_monthly_settlement_report(...)
     return df_to_json(get.cm_monthly_settlement_report(period or start_year, end_year))
 
@@ -1573,7 +1467,6 @@ def monthly_most_active_equity():
     CATEGORY:
         Market_Stats
     """
-    rate_limit()
     # Original: get.cm_monthly_most_active_equity()
     return df_to_json(get.cm_monthly_most_active_equity())
 
@@ -1593,7 +1486,6 @@ def advances_declines(mode: str = "Month_wise", month: str = None, year: int = N
     CATEGORY:
         Market_Stats
     """
-    rate_limit()
     # Original: get.historical_advances_decline(...)
     return df_to_json(get.historical_advances_decline(mode, month, year))
 
@@ -1615,7 +1507,6 @@ def fno_bhavcopy(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_bhav_copy("17-10-2025")
     return df_to_json(get.fno_eod_bhav_copy(date))
 
@@ -1633,7 +1524,6 @@ def fii_stats_fno(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_fii_stats("17-10-2025")
     return df_to_json(get.fno_eod_fii_stats(date))
 
@@ -1651,7 +1541,6 @@ def top10_futures(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_top10_fut("17-10-2025")
     return df_to_json(get.fno_eod_top10_fut(date))
 
@@ -1669,7 +1558,6 @@ def top20_options(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_top20_opt("17-10-2025")
     return df_to_json(get.fno_eod_top20_opt(date))
 
@@ -1687,7 +1575,6 @@ def security_ban_list(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_sec_ban("17-10-2025")
     return df_to_json(get.fno_eod_sec_ban(date))
 
@@ -1705,7 +1592,6 @@ def mwpl_data(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_mwpl_3("17-10-2025")
     return df_to_json(get.fno_eod_mwpl_3(date))
 
@@ -1723,7 +1609,6 @@ def combined_oi(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_combine_oi("17-10-2025")
     return df_to_json(get.fno_eod_combine_oi(date))
 
@@ -1741,7 +1626,6 @@ def participant_oi(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_participant_wise_oi("17-10-2025")
     return df_to_json(get.fno_eod_participant_wise_oi(date))
 
@@ -1759,7 +1643,6 @@ def participant_volume(date: str):
     CATEGORY:
         FnO_EOD
     """
-    rate_limit()
     # Original: get.fno_eod_participant_wise_vol("17-10-2025")
     return df_to_json(get.fno_eod_participant_wise_vol(date))
 
@@ -1781,7 +1664,6 @@ def future_historical(symbol: str, type_: str, expiry: str = None, from_date: st
     CATEGORY:
         FnO_Historical
     """
-    rate_limit()
     # Original: get.future_price_volume_data(...)
     return df_to_json(get.future_price_volume_data(symbol, type_, expiry or period, from_date, to_date))
 
@@ -1803,7 +1685,6 @@ def option_historical(symbol: str, type_: str, strike: str = None, from_date: st
     CATEGORY:
         FnO_Historical
     """
-    rate_limit()
     # Original: get.option_price_volume_data(...)
     return df_to_json(get.option_price_volume_data(symbol, type_, strike, from_date, to_date, expiry=expiry or period))
 
@@ -1821,7 +1702,6 @@ def fno_lot_size(symbol: str = None):
     CATEGORY:
         FnO_Reference
     """
-    rate_limit()
     # Original: get.fno_eom_lot_size("TCS")
     return df_to_json(get.fno_eom_lot_size(symbol))
 
@@ -1840,7 +1720,6 @@ def fno_business_growth(mode: str = "monthly", month: str = None, year: int = No
     CATEGORY:
         FnO_Stats
     """
-    rate_limit()
     # Original: get.fno_dmy_biz_growth(...)
     return df_to_json(get.fno_dmy_biz_growth(mode, month=month, year=year))
 
@@ -1859,7 +1738,6 @@ def fno_settlement_report(period: str = None, start_year: int = None, end_year: 
     CATEGORY:
         FnO_Stats
     """
-    rate_limit()
     # Original: get.fno_monthly_settlement_report(...)
     return df_to_json(get.fno_monthly_settlement_report(period or start_year, end_year))
 
@@ -1882,7 +1760,6 @@ def sebi_circulars(from_date: str = None, to_date: str = None, period: str = Non
     CATEGORY:
         Regulatory
     """
-    rate_limit()
     # Original: get.sebi_circulars(...)
     return df_to_json(get.sebi_circulars(period or from_date, to_date))
 
@@ -1900,7 +1777,6 @@ def sebi_data_pages(page: int = 1):
     CATEGORY:
         Regulatory
     """
-    rate_limit()
     # Original: get.sebi_data()
     return df_to_json(get.sebi_data(page))
 
@@ -1910,4 +1786,4 @@ def sebi_data_pages(page: int = 1):
 
 if __name__ == "__main__":
     print("🔵 Starting NseKit-MCP server...")
-    asyncio.run(mcp.run(transport="streamable-http"))
+    mcp.run()

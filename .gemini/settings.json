@@ -1,12 +1,8 @@
 {
   "mcpServers": {
     "NseKit-MCP": {
-      "command": "UV",
+      "command": "mcp",
       "args": [
-        "run",
-        "--with",
-        "mcp[cli]",
-        "mcp",
         "run",
         "D:\\Prasad\\Trading\\01. Py\\MCP\\nsekit-mcp\\main.py"
       ]
